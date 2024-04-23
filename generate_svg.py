@@ -1,81 +1,132 @@
 import svgwrite
+from dataclasses import dataclass
 
+import svgwrite.text
 
+@dataclass
+class Config:
+    width_total : int = 30
+    height_total : int = 50
+    letter_font_size : int = 7
+    letter_y : int = 10
+    line_thickness : float = 0.5
+    bridge_thickness : int = 3
+    marker_diameter : float = 2.85
+    bridge_y : int = 20
+    string_letters_y : int = 22
+    string_letters_font_size : int = 2
+    height_ratio : float = 0.5
+    width_ratio : float = 0.7
+    number_of_strings : int = 6
+    number_of_frets : int = 6
+
+@dataclass
+class Strings:
+    strings: str
+    fingering: str
+    chordName: str
+    enharmonicChordName: str
+    tones: str
 
 class Generate_Chord_SVG:
-    
-    default_config = {
-    # all dimensions are in px
-    "total_width" : 50,
-    "total_length" : 50,
-    "font_size" : 9,
-    #"space_between_strings" : 10,
-    "line_thickness" : 1,
-    "side_margins" : 4,
-    "top_margins" : 10,
-    "height_ratio" : 0.75,
-    "num_of_frets" : 5,
-    }
 
-    def __init__(self, file_name: str, strings: str, fingering: str, chord_name: str, config : dict = None):
-        # 'file_name' = 'chords/Em.svg', 'strings'= '0 2 2 0 0 0', 'fingering'= 'X 2 3 X X X', 'chord_name'= 'Em'
-        self.config = config
-        if not self.config:
-            self.config = self.default_config
+    def __init__(self, file_name: str, strings: Strings, config:Config ):
         self.file_name = file_name
         self.strings = strings
-        self.fingering = fingering
-        self.chord_name = chord_name
-        self.svg = svgwrite.Drawing(self.file_name, profile='tiny', size=(self.config['total_width'], self.config['total_length']))
+        self.config = config
+        self.svg = svgwrite.Drawing(self.file_name, profile='tiny', size=(self.config.width_total, self.config.height_total))
         self.draw_svg()
         self.svg.save()
 
-    def calculate_space_between_strings(self) -> None:
-        self.config["space_between_strings"] = (self.config["total_width"] - 2*self.config["side_margins"] - self.config["line_thickness"]) / 5
-        
-    def draw_bridge(self) -> None:
-        width = self.config["total_width"] - self.config["side_margins"]
-        thickness = self.config["line_thickness"] * 4
-        height = self.config["top_margins"]
-        bridge = svgwrite.shapes.Rect(insert=(5, 40 - height/2), size=(width, height), stroke=svgwrite.rgb(0, 0, 0, '%'), stroke_width=thickness, fill="none")
-        self.svg.add(
-            self.svg.line(
-                start=(self.config["side_margins"], self.config["top_margins"]), 
-                end=(width, self.config["top_margins"]), 
-                stroke=svgwrite.rgb(0, 0, 0, '%'), 
-                stroke_width=self.config["line_thickness"] * 2
-                )
-            )
-    
-    def draw_strings(self) -> None:
-        string_x_array = [self.config["side_margins"] + 0.5 * self.config["line_thickness"] + self.config["space_between_strings"] * i for i in range(6)]
-        length = self.config["height_ratio"] *  self.config["total_length"]
-        for x in string_x_array:
-            self.svg.add(
-                self.svg.line(
-                    start=(x, self.config["top_margins"]), 
-                    end=(x, length), 
-                    stroke=svgwrite.rgb(0, 0, 0, '%'), 
-                    stroke_width=self.config["line_thickness"]
-                    )
-            )
 
-    def calculate_space_between_frets(self) -> None:
-        height = self.config["total_length"] * self.config["height_ratio"]
-        self.config['space_between_frets'] = (height - 0.5 * self.config["line_thickness"] ) / self.config["num_of_frets"]
+    def calculate_dimensions(self) -> None:
+        self.middle_x = self.config.width_total / 2
+        self.width = self.config.width_total * self.config.width_ratio
+        self.height = self.config.height_total * self.config.height_ratio
+        self.width_margin = self.middle_x - 0.5 * self.width
+        self.string_distance = (self.width - self.config.line_thickness) / (self.config.number_of_strings - 1)
+        self.fret_distance = (self.height - self.config.line_thickness) / (self.config.number_of_frets - 1)
+        self.strings_x_array = [self.width_margin + 0.5 * self.config.line_thickness + self.string_distance * i for i in range(self.config.number_of_strings)]
+        self.frets_y_array=[ self.config.bridge_y + 0.5 * self.config.line_thickness + self.fret_distance * i for i in range(self.config.number_of_frets)]
+
+    def draw_title(self) -> None:
+        title = svgwrite.text.Text(
+            text=self.strings.chordName,
+            x=[self.config.width_total / 2],  # Set x to the center of the page
+            y=[self.config.letter_y],
+            text_anchor="middle"  # Center the text horizontally
+        )
+        title.font_size = self.config.letter_font_size
+        self.svg.add(title)
+
+    def draw_bridge(self) -> None:
+        x_start =  self.width_margin
+        x_end =  self.width_margin + self.width
+        y = self.config.bridge_y - 0.5 * self.config.bridge_thickness
+        bridge_line = svgwrite.shapes.Line(start=(x_start, y), end=(x_end, y), stroke="black", stroke_width=self.config.bridge_thickness)
+        self.svg.add(bridge_line)
+
+    def draw_strings(self) -> None:
+        y_start = self.config.bridge_y - self.config.bridge_thickness
+        y_end = self.config.bridge_y + self.height
+        for string_x in self.strings_x_array:
+            string_line = svgwrite.shapes.Line(start=(string_x, y_start), end=(string_x, y_end), stroke="black", stroke_width=self.config.line_thickness)
+            self.svg.add(string_line)
 
     def draw_frets(self) -> None:
-        fret_y_array = [self.config["top_margins"] ]
-        fret_y_arra = [self.config["top_margins"] + 0.5 * self.config["line_thickness"] + self.config["space_between_frets"] * i for i in range(self.config["num_of_frets"])]
+        x_start = self.width_margin
+        x_end = self.width_margin + self.width
+        for fret_y in self.frets_y_array:
+            fret_line = svgwrite.shapes.Line(start=(x_start, fret_y), end=(x_end, fret_y), stroke="black", stroke_width=self.config.line_thickness)
+            self.svg.add(fret_line)
+    
+    def draw_markers(self) -> None:
+        # '0 2 2 0 0 0' -> {5:2, 4:2}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) != 0}
+        for string_number in string_fret_dict.keys():
+            x = self.strings_x_array[string_number]
+            y = self.frets_y_array[string_fret_dict[string_number]] - 0.5 * self.fret_distance
+            marker = svgwrite.shapes.Circle(center=(x,y),r=self.config.marker_diameter / 2, fill='black')
+            self.svg.add(marker)
+    
+    def draw_string_letters(self) -> None:
+        # '0 2 2 0 0 0' -> [0, 3, 4, 5]
+        open_string_list = [int(index) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) == 0]
+        closed_string_list = [int(index) for index, string in enumerate(self.strings.strings.split(' ')) if string == 'x']
+        for open_string in open_string_list:
+            x = self.strings_x_array[open_string] - self.config.line_thickness
+            y = self.config.bridge_y - self.config.bridge_thickness - 0.5
+            string_letter = svgwrite.text.Text(text= 'o', x=[x], y=[y], font_size=self.config.string_letters_font_size)
+            self.svg.add(string_letter)
+        for closed_string in closed_string_list:
+            x = self.strings_x_array[closed_string] - self.config.line_thickness
+            y = self.config.bridge_y - self.config.bridge_thickness - 1
+            string_letter = svgwrite.text.Text(text= 'x', x=[x], y=[y], font_size=self.config.string_letters_font_size)
+            self.svg.add(string_letter)
+
+    def draw_finger_numbers(self):
+        # '0 2 2 0 0 0' -> {5:2, 4:2}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) != 0}
+        string_finger_dict = {int(index):int(finger) for index, finger in enumerate(self.strings.fingering.split(' ')) if finger != 'X'}
+        for string_number in string_fret_dict.keys():
+            x = self.strings_x_array[string_number] - self.config.line_thickness
+            y = self.config.bridge_y + self.config.height_total * self.config.height_ratio + 2
+            finger = svgwrite.text.Text(text=string_finger_dict[string_number], x=[x], y=[y], font_size=self.config.string_letters_font_size)
+            self.svg.add(finger)
 
     def draw_svg(self):
-        self.calculate_space_between_strings()
-        self.calculate_space_between_frets()
+        self.calculate_dimensions()
+        self.draw_title()
         self.draw_bridge()
         self.draw_strings()
-        self.frets()
+        self.draw_frets()
+        self.draw_markers()
+        self.draw_string_letters()
+        self.draw_finger_numbers()
 
 
 if __name__ == "__main__":
-    svg = Generate_Chord_SVG(file_name='Em.svg',strings='0 2 2 0 0 0',fingering='X 2 3 X X X', chord_name='Em')  
+    config = Config()
+    strings = Strings(strings='0 2 2 1 0 0', fingering='X 2 3 1 X X',chordName='E', enharmonicChordName="",tones="")
+    svg = Generate_Chord_SVG(file_name='test.svg', strings=strings, config=config)  
     
