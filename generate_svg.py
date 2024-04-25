@@ -30,14 +30,21 @@ class Strings:
 
 class Generate_Chord_SVG:
 
-    def __init__(self, file_name: str, strings: Strings, config:Config ):
+    def __init__(self, file_name: str, strings: Strings, config:Config = None ):
         self.file_name = file_name
         self.strings = strings
         self.config = config
+        if not config:
+            self.config = Config()
         self.svg = svgwrite.Drawing(self.file_name, profile='tiny', size=(self.config.width_total, self.config.height_total))
         self.draw_svg()
         self.svg.save()
 
+    def split_strings(self, strings: str) -> list[str]:
+        if ' ' in strings:
+            return strings.split(' ')
+        else:
+            return [s for s in strings]
 
     def calculate_dimensions(self) -> None:
         self.middle_x = self.config.width_total / 2
@@ -82,7 +89,7 @@ class Generate_Chord_SVG:
     
     def draw_markers(self) -> None:
         # '0 2 2 0 0 0' -> {5:2, 4:2}
-        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) != 0}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) != 0}
         for string_number in string_fret_dict.keys():
             x = self.strings_x_array[string_number]
             y = self.frets_y_array[string_fret_dict[string_number]] - 0.5 * self.fret_distance
@@ -91,8 +98,8 @@ class Generate_Chord_SVG:
     
     def draw_string_letters(self) -> None:
         # '0 2 2 0 0 0' -> [0, 3, 4, 5]
-        open_string_list = [int(index) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) == 0]
-        closed_string_list = [int(index) for index, string in enumerate(self.strings.strings.split(' ')) if string == 'x']
+        open_string_list = [int(index) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) == 0]
+        closed_string_list = [int(index) for index, string in enumerate(self.split_strings(self.strings.strings)) if string == 'x']
         for open_string in open_string_list:
             x = self.strings_x_array[open_string] - self.config.line_thickness
             y = self.config.bridge_y - self.config.bridge_thickness - 0.5
@@ -106,8 +113,8 @@ class Generate_Chord_SVG:
 
     def draw_finger_numbers(self):
         # '0 2 2 0 0 0' -> {5:2, 4:2}
-        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.strings.strings.split(' ')) if int(string) != 0}
-        string_finger_dict = {int(index):int(finger) for index, finger in enumerate(self.strings.fingering.split(' ')) if finger != 'X'}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) != 0}
+        string_finger_dict = {int(index):int(finger) for index, finger in enumerate(self.split_strings(self.strings.fingering)) if finger != 'X'}
         for string_number in string_fret_dict.keys():
             x = self.strings_x_array[string_number] - self.config.line_thickness
             y = self.config.bridge_y + self.config.height_total * self.config.height_ratio + 2

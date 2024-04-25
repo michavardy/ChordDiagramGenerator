@@ -1,16 +1,21 @@
 [tool.poetry]
-name = "ChordDiagramGenerator"
+name = "chord_diagram_generator"
 version = "0.1.0"
 description = "A package for generating chord diagrams"
-authors = ["Micha Vardy michavardy@gmail.com"]
+authors = ["micha <michavardy@gmail.com>"]
+license = "mit"
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
-svgwrite = "^1.4.1"
+python = "^3.10"
+svgwrite = "^1.4.3"
+requests = "^2.31.0"
+
+[[tool.poetry.packages]]
+include = "*.py"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.scripts]
-generate_svg = "generate_svg:main"
+[tool.setuptools_scm]
