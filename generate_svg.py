@@ -61,9 +61,9 @@ class Generate_Chord_SVG:
             text=self.strings.chordName,
             x=[self.config.width_total / 2],  # Set x to the center of the page
             y=[self.config.letter_y],
-            text_anchor="middle"  # Center the text horizontally
+            text_anchor="middle",
+            font_size=self.config.letter_font_size # Center the text horizontally
         )
-        title.font_size = self.config.letter_font_size
         self.svg.add(title)
 
     def draw_bridge(self) -> None:
@@ -98,7 +98,7 @@ class Generate_Chord_SVG:
     
     def draw_string_letters(self) -> None:
         # '0 2 2 0 0 0' -> [0, 3, 4, 5]
-        open_string_list = [int(index) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) == 0]
+        open_string_list = [int(index) for index, string in enumerate(self.split_strings(self.strings.strings)) if string == "0"]
         closed_string_list = [int(index) for index, string in enumerate(self.split_strings(self.strings.strings)) if string == 'x']
         for open_string in open_string_list:
             x = self.strings_x_array[open_string] - self.config.line_thickness
@@ -113,7 +113,7 @@ class Generate_Chord_SVG:
 
     def draw_finger_numbers(self):
         # '0 2 2 0 0 0' -> {5:2, 4:2}
-        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) != 0}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if string not in  ['0','X']}
         string_finger_dict = {int(index):int(finger) for index, finger in enumerate(self.split_strings(self.strings.fingering)) if finger != 'X'}
         for string_number in string_fret_dict.keys():
             x = self.strings_x_array[string_number] - self.config.line_thickness
