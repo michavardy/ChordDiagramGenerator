@@ -7,7 +7,7 @@ The Guitar Chord Generator is a Python package designed to generate SVG images o
 You can install the Guitar Chord Generator package using pip:
 
 ```bash
-pip install git+https://github.com/michavardy/GuitarChordGenerator.git
+pip install git+https://github.com/michavardy/ChordDiagramGenerator.git
 ```
 
 ## Configuration
@@ -19,32 +19,8 @@ No additional configuration is required to use the Guitar Chord Generator packag
 To generate an SVG image of a guitar chord, you can use the GenerateGuitarChords class:
 
 ```python
-from ChordDiagramGenerator import generate_chord_svg
-
-chord_svg = generate_chord_svg(chord_name='Em', return_xml=True)
-chord_svg = generate_chord_svg(chord_name='Em', return_svg_path=True)
-```
-
-
-## Poetry
-
-```conf
-[tool.poetry]
-name = "ChordDiagramGenerator"
-version = "0.1.0"
-description = "A package for generating chord diagrams"
-authors = ["Micha Vardy michavardy@gmail.com"]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-svgwrite = "^1.4.1"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-generate_chord_svg = "main:generate_chord_svg"
-
-[tool.setuptools_scm]
+from chord_diagram_generator import generate_chord_svg
+generate_chord_svg(chord_name="Em")
+generate_chord_svg(chord_name="Em", return_xml=True)
+generate_chord_svg(chord_name="Em", return_svg_path=True)
 ```
