@@ -38,6 +38,8 @@ def generate_chord_svg(
         # Return the path to the generated SVG image
         return svg_path
     elif return_tag:
+        with open(svg_path, 'r') as f:
+            svg_xml = f.read()
         soup = BeautifulSoup(svg_xml, 'xml')
         return soup.svg
     else:
