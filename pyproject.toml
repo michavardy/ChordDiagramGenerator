@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chord_diagram_generator"
-version = "0.1.3"
+version = "0.1.4"
 description = "A package for generating chord diagrams"
 authors = ["micha <michavardy@gmail.com>"]
 license = "mit"

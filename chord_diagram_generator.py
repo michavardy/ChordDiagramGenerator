@@ -1,6 +1,13 @@
 import guitar_chords
+from bs4 import BeautifulSoup
+from bs4.element import  Tag
+from typing import Union
 
-def generate_chord_svg(chord_name: str, return_xml: bool = False, return_svg_path: bool = False) -> str:
+def generate_chord_svg(
+        chord_name: str, 
+        return_xml: bool = False, 
+        return_svg_path: bool = False, 
+        return_tag: bool = False) -> Union[str,Tag,None]:
     """
     Generates an SVG image or SVG XML content of the specified guitar chord.
 
@@ -11,9 +18,10 @@ def generate_chord_svg(chord_name: str, return_xml: bool = False, return_svg_pat
                                           Defaults to False.
 
     Returns:
-        str: If return_xml is True, returns the SVG XML content. 
-             If return_svg_path is True, returns the path to the generated SVG image file.
-             If neither return_xml nor return_svg_path is True, returns None.
+        Union[str, Tag, None]: If return_xml is True, returns the SVG XML content. 
+                               If return_svg_path is True, returns the path to the generated SVG image file.
+                               If return_tag is True, returns the BeautifulSoup tag of the SVG content.
+                               If none of return_xml, return_svg_path, return_tag is True, returns None.
     """
     # Instantiate GenerateGuitarChords class
     chord_gen = guitar_chords.GenerateGuitarChords()
@@ -29,6 +37,9 @@ def generate_chord_svg(chord_name: str, return_xml: bool = False, return_svg_pat
     elif return_svg_path:
         # Return the path to the generated SVG image
         return svg_path
+    elif return_tag:
+        soup = BeautifulSoup(svg_xml, 'xml')
+        return soup.svg
     else:
         return
 
