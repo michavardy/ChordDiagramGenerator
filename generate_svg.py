@@ -89,7 +89,7 @@ class Generate_Chord_SVG:
     
     def draw_markers(self) -> None:
         # '0 2 2 0 0 0' -> {5:2, 4:2}
-        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if int(string) != 0}
+        string_fret_dict = {int(index): int(string) for index, string in enumerate(self.split_strings(self.strings.strings)) if string not in ["0","X"]}
         for string_number in string_fret_dict.keys():
             x = self.strings_x_array[string_number]
             y = self.frets_y_array[string_fret_dict[string_number]] - 0.5 * self.fret_distance
