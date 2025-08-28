@@ -24,11 +24,15 @@ def generate_chord_svg(
                                If none of return_xml, return_svg_path, return_tag is True, returns None.
     """
     # Instantiate GenerateGuitarChords class
-    chord_gen = guitar_chords.GenerateGuitarChords()
+    try:
+        chord_gen = guitar_chords.GenerateGuitarChords()
+        svg_path = chord_gen.get_guitar_chord_path(chord_name=chord_name)
+    except Exception as e:
+        print(e)
+        return
 
-    # Get SVG image path for the chord
-    svg_path = chord_gen.get_guitar_chord_path(chord_name=chord_name)
-
+    if not svg_path:
+        return
     if return_xml:
         # Read SVG content and return SVG XML
         with open(svg_path, 'r') as f:
